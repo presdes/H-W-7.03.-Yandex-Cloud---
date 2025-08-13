@@ -1,4 +1,4 @@
-# H/W 7.03. Файлы проекта terraform домашнего задания "`Подъём инфраструктуры в Yandex Cloud`" - `Моторин Алексей`
+# H/W 7.03. Файлы проекта terraform, домашнего задания "`Подъём инфраструктуры в Yandex Cloud`" - `Моторин Алексей`
 
 :book: [Подробнее на Google DOCs](https://docs.google.com/document/d/18CEnHFG5cI6Unp4Kg1IHxTEh2VrBvS5KErNtBIJPmdU/edit?usp=sharing)
 ```
