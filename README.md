@@ -4,16 +4,14 @@
 ```
 .
 ├── .gitignore               # Игнорируемые файлы (кеш, ключи и т.д.)
-├── .terraform.lock.hcl      # Фиксация версий провайдеров
 ├── ansible.cfg              # Конфигурация Ansible
 ├── cloud-init.yml           # Cloud-init конфигурация для ВМ
+├── config                   # SSH config
 ├── hosts.ini                # Инвентарь Ansible
 ├── main.tf                  # Основная конфигурация Terraform
 ├── network.tf               # Настройки сети (VPC, подсети)
 ├── providers.tf             # Настройки провайдеров Terraform
 ├── terraform.tfvars         # Переменные Terraform (значения)
-├── terraform.tfstate        # Состояние инфраструктуры (не коммитить!)
-├── terraform.tfstate.backup # Бэкап состояния (не коммитить!)
 ├── test.yml                 # Playbook/тесты Ansible
 └── variables.tf             # Объявление переменных Terraform
 ```
