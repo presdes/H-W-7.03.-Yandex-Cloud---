@@ -1,0 +1,105 @@
+---
+- name: Deploy web servers
+  hosts: webservers
+  become: yes
+  vars:
+    web_server_name: "{{ inventory_hostname }}"
+
+  tasks:
+    # Установка Apache
+    - name: Install Apache web server
+      apt:
+        name: apache2
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Install Apache web server (RHEL)
+      yum:
+        name: httpd
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    # Запуск и настройка автозапуска
+    - name: Start and enable Apache service
+      service:
+        name: "{{ 'apache2' if ansible_os_family == 'Debian' else 'httpd' }}"
+        state: started
+        enabled: yes
+
+    # Создание индексной страницы
+    - name: Create custom index.html
+      template:
+        src: templates/index.html.j2
+        dest: "/var/www/html/index.html"
+        owner: www-data
+        group: www-data
+        mode: '0644'
+
+    # Настройка брандмауэра
+    - name: Allow HTTP traffic
+      firewall:
+        service: http
+        state: enabled
+        permanent: yes
+      when: ansible_os_family == "RedHat"
+
+    - name: Allow HTTP traffic (Debian)
+      ufw:
+        rule: allow
+        port: 80
+        proto: tcp
+      when: ansible_os_family == "Debian"
+
+    # Перезагрузка Apache
+    - name: Reload Apache service
+      service:
+        name: "{{ 'apache2' if ansible_os_family == 'Debian' else 'httpd' }}"
+        state: reloaded
+
+- name: Configure Bastion Server
+  hosts: bastion
+  become: yes
+
+  tasks:
+    - name: Install required packages
+      apt:
+        name: ufw
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Enable IP forwarding
+      sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        sysctl_set: yes
+
+    - name: Configure NAT for web-a
+      shell: |
+        iptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to-destination 10.1.0.8:80
+        iptables -t nat -A POSTROUTING -j MASQUERADE
+        netfilter-persistent save
+        netfilter-persistent reload
+      when: ansible_os_family == "Debian"
+
+    - name: Configure NAT for web-b
+      shell: |
+        iptables -t nat -A PREROUTING -p tcp --dport 81 -j DNAT --to-destination 10.2.0.18:80
+        iptables -t nat -A POSTROUTING -j MASQUERADE
+        netfilter-persistent save
+        netfilter-persistent reload
+      when: ansible_os_family == "Debian"
+
+    - name: Allow forwarding ports
+      ufw:
+        rule: allow
+        port: 80/tcp
+        comment: Access to web-a
+
+    - name: Allow forwarding ports
+      ufw:
+        rule: allow
+        port: 81/tcp
+        comment: Access to web-b
+
+    - name: Enable UFW
+      shell: ufw enable
