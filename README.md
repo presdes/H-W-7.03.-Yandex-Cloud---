@@ -15,5 +15,5 @@
 ├── terraform.tfvars         # Переменные Terraform (значения)
 ├── test.yml                 # Playbook/тесты Ansible
 ├── variables.tf             # Объявление переменных Terraform
-└── web.yaml                 # Плейбук для разворачивания WEB серверов 
+└── web.yaml                 # Плейбук для развертывания WEB-серверов
 ```
