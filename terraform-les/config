@@ -1,0 +1,16 @@
+Host bastion
+  HostName 89.169.151.110
+  User user
+  IdentityFile C:\Users\uskcorp\.ssh\id_ed25519
+
+Host web-a
+  HostName 10.1.0.8
+  User user
+  ProxyCommand ssh -W %h:%p bastion
+  IdentityFile C:\Users\uskcorp\.ssh\id_ed25519
+
+Host web-b
+  HostName 10.2.0.18
+  User user
+  ProxyCommand ssh -W %h:%p bastion
+  IdentityFile C:\Users\uskcorp\.ssh\id_ed25519
