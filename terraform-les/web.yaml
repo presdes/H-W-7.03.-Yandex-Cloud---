@@ -6,6 +6,12 @@
     web_server_name: "{{ inventory_hostname }}"
 
   tasks:
+    # Обновление кэша apt
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
     # Установка Apache
     - name: Install Apache web server
       apt:
@@ -14,7 +20,7 @@
       when: ansible_os_family == "Debian"
 
     - name: Install Apache web server (RHEL)
-      yum:
+      dnf:
         name: httpd
         state: present
       when: ansible_os_family == "RedHat"
@@ -36,11 +42,11 @@
         mode: '0644'
 
     # Настройка брандмауэра
-    - name: Allow HTTP traffic
-      firewall:
+    - name: Allow HTTP traffic (RHEL)
+      firewalld:
         service: http
-        state: enabled
         permanent: yes
+        state: enabled
       when: ansible_os_family == "RedHat"
 
     - name: Allow HTTP traffic (Debian)
@@ -61,10 +67,24 @@
   become: yes
 
   tasks:
-    - name: Install required packages
+    # Обновление кэша apt для bastion
+    - name: Update apt cache (bastion)
       apt:
-        name: ufw
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    # Установка пакетов с повторными попытками
+    - name: Install required packages with retry
+      apt:
+        name: "{{ item }}"
         state: present
+      loop:
+        - ufw
+        - iptables-persistent
+      register: package_install
+      retries: 3
+      delay: 10
+      until: package_install is success
       when: ansible_os_family == "Debian"
 
     - name: Enable IP forwarding
@@ -89,13 +109,13 @@
         netfilter-persistent reload
       when: ansible_os_family == "Debian"
 
-    - name: Allow forwarding ports
+    - name: Allow forwarding port 80
       ufw:
         rule: allow
         port: 80/tcp
         comment: Access to web-a
 
-    - name: Allow forwarding ports
+    - name: Allow forwarding port 81
       ufw:
         rule: allow
         port: 81/tcp
